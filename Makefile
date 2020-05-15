@@ -1,5 +1,5 @@
 export GOPATH=$(shell pwd)/../../../../
-export PATH:=${PATH}:${GOPATH}/bin:$(shell pwd)/third/go/bin:$(shell pwd)/third/protobuf/bin:$(shell pwd)/third/cloc-1.76:$(shell pwd)/third/redis-3.2.8/src
+export PATH:=${PATH}:${GOPATH}/bin:$(shell pwd)/third/go/bin:$(shell pwd)/third/protobuf/bin:$(shell pwd)/third/cloc-1.76
 
 .PHONY: all
 all: third vendor build test stat
@@ -96,15 +96,4 @@ easyjson: golang
 	@hash easyjson 2>/dev/null || { \
 		echo "install easyjson" && \
 		go get -u github.com/mailru/easyjson/...; \
-	}
-
-.PHONY: redis
-redis:
-	@hash redis 2>/dev/null || { \
-		echo "install redis" && \
-		mkdir -p third && cd third && \
-		wget http://download.redis.io/releases/redis-3.2.8.tar.gz && \
-		tar -xzvf redis-3.2.8.tar.gz && \
-		cd redis-3.2.8 && \
-		make -j8; \
 	}
