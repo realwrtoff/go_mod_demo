@@ -1,0 +1,40 @@
+{
+    "service": {
+        "port": ":7060",
+        "allowOrigins": [
+            "*"
+        ],
+        "cookieSecure": true,
+        "cookieDomain": "echo.hatlonely.com"
+    },
+    "mongo": {
+        "addrs": [
+            "127.0.0.1:21617"
+        ],
+        "username": "",
+        "password": "",
+        "dbName": "haina",
+        "collectionName": "guahao",
+        "timeout": 30
+    },
+    "es": {
+        "uri": "http://52.130.80.56:21692"
+    },
+    "logger": {
+        "info": {
+            "formatter": "text",
+            "filename": "log/echo.info",
+            "maxAge": "24h"
+        },
+        "warn": {
+            "formatter": "text",
+            "filename": "log/echo.warn",
+            "maxAge": "24h"
+        },
+        "access": {
+            "formatter": "json",
+            "filename": "log/echo.access",
+            "maxAge": "24h"
+        }
+    }
+}
