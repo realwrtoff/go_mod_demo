@@ -39,6 +39,7 @@ type ClickInstall struct {
 	ClickId bson.ObjectId `bson:"_id" json:"click_id"`
 	ReqTime int64 `bson:"req_time,omitempty" json:"req_time,omitempty"`
 	RespTime int64 `bson:"resp_time,omitempty" json:"resp_time,omitempty"`
+	ActiveTime int64 `bson:"active_time,omitempty" json:"active_time,omitempty"`
 	Reduce bool `bson:"reduce,omitempty" json:"reduce,omitempty"`
 	Token string `form:"pub" bson:"pub" json:"pub"`
 	CallBack string `form:"callback" bson:"callback" json:"callback"`

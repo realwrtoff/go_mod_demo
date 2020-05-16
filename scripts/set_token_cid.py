@@ -20,6 +20,7 @@ def main():
             'pub': 'didazhuan',
             'cid': 'ddz_xxx',
             'status': 1,
+            'billing': 1,
             'url': advertiser_url,
             'origin_cid': 'guahao',
             'name': 'haina'

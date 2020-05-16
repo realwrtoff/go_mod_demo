@@ -8,16 +8,16 @@ import (
 	"time"
 )
 
-type InstallReq struct {
+type ActiveReq struct {
 	ClickId string `form:"click_id"`
 }
 
-type InstallRes struct {
+type ActiveRes struct {
 	Message string `form:"message" json:"message"`
 }
 
-func (s *Service) Install(rid string, c *gin.Context) (interface{}, interface{}, int, error) {
-	req := &InstallReq{}
+func (s *Service) Active(rid string, c *gin.Context) (interface{}, interface{}, int, error) {
+	req := &ActiveReq{}
 
 	if err := c.Bind(req); err != nil {
 		return nil, nil, http.StatusBadRequest, fmt.Errorf("bind failed. err: [%v]", err)
@@ -30,18 +30,18 @@ func (s *Service) Install(rid string, c *gin.Context) (interface{}, interface{},
 		return nil, nil, http.StatusNotFound, fmt.Errorf("clickid [%v] not found. err: [%v]", req.ClickId, err)
 	}
 	// 重复发送
-	if clkIns.RespTime != 0 {
-		return nil, nil, http.StatusAlreadyReported, fmt.Errorf("clickid [%v] duplicated", req.ClickId)
+	if clkIns.ActiveTime != 0 {
+		return nil, nil, http.StatusAlreadyReported, fmt.Errorf("clickid [%v] duplicated callback active", req.ClickId)
 	}
 	// 查找扣量回调等配置信息
 	if s.channel[clkIns.Token] == nil {
-		return nil, nil, http.StatusNotFound, fmt.Errorf("click token [%v] not found", clkIns.Token)
+		return nil, nil, http.StatusNotFound, fmt.Errorf("active token [%v] not found", clkIns.Token)
 	}
 	if s.channel[clkIns.Token][clkIns.Cid] == nil {
-		return nil, nil, http.StatusNotFound, fmt.Errorf("click token[%v] cid[%v] not found", clkIns.Token, clkIns.Cid)
+		return nil, nil, http.StatusNotFound, fmt.Errorf("active token[%v] cid[%v] not found", clkIns.Token, clkIns.Cid)
 	}
 
-	if s.channel[clkIns.Token][clkIns.Cid].Billing == INSTALL {
+	if s.channel[clkIns.Token][clkIns.Cid].Billing == ACTIVE {
 		s.channel[clkIns.Token][clkIns.Cid].Counter += 1
 		var reduce bool
 		// 需要扣量
@@ -51,7 +51,7 @@ func (s *Service) Install(rid string, c *gin.Context) (interface{}, interface{},
 			}
 		}
 		// 更新mongo
-		if err := s.mgo.Collection.UpdateId(objId, bson.M{"$set": bson.M{"resp_time": time.Now().Unix(), "reduce": reduce}}); err != nil{
+		if err := s.mgo.Collection.UpdateId(objId, bson.M{"$set": bson.M{"active_time": time.Now().Unix(), "reduce": reduce}}); err != nil{
 			return nil, nil, http.StatusInternalServerError, err
 		}
 		// 回调
@@ -63,12 +63,12 @@ func (s *Service) Install(rid string, c *gin.Context) (interface{}, interface{},
 			}
 		}
 	} else {
-		// 更新mongo
-		if err := s.mgo.Collection.UpdateId(objId, bson.M{"$set": bson.M{"resp_time": time.Now().Unix()}}); err != nil{
+		// 更新mongo 应该不会走到这一支
+		if err := s.mgo.Collection.UpdateId(objId, bson.M{"$set": bson.M{"active_time": time.Now().Unix()}}); err != nil{
 			return nil, nil, http.StatusInternalServerError, err
 		}
 	}
-	return req, &InstallRes{
+	return req, &ActiveRes{
 		Message: "ok",
 	}, http.StatusOK, nil
 }

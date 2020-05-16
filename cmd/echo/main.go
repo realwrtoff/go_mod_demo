@@ -149,6 +149,7 @@ func main() {
 	r.GET("/channel", d.Decorate(svc.Channel))
 	r.GET("/click", d.Decorate(svc.Click))
 	r.GET("/install", d.Decorate(svc.Install))
+	r.GET("/active", d.Decorate(svc.Active))
 
 	infoLog.Infof("%v init success, port [%v]", os.Args[0], options.Service.Port)
 
