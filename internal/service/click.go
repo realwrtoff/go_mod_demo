@@ -130,7 +130,7 @@ func (s *Service) Click(rid string, c *gin.Context) (interface{}, interface{}, i
 	if err := s.RequestAdvertiser(req, clickId.Hex()); err != nil {
 		res.Code = http.StatusInternalServerError
 		res.Message = err.Error()
-		s.warnLog.Error("request advertiser failed, err [%v]", *clickInfo, err.Error())
+		s.warnLog.Errorf("request advertiser failed [%v], err [%s]", *clickInfo, err.Error())
 		return req, res, http.StatusInternalServerError, nil
 	}
 
