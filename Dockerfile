@@ -1,6 +1,7 @@
 FROM centos:centos7
 
 RUN yum install -y epel-release \
+    && yum -y install https://centos7.iuscommunity.org/ius-release.rpm \
     && yum reinstall -y glibc-common \
     && yum install -y make \
     && yum -y install python36u python36u-pip  python36u-devel \
@@ -23,10 +24,11 @@ ENV PATH=$PATH:/usr/local/go/bin
 ENV GOROOT=/usr/local/go
 
 # 添加代码和编译
-RUN git clone https://github.com/realwrtoff/go_mod_demo.git \
-    && cd go_mod_demo && make output
+# RUN git clone https://github.com/realwrtoff/go_mod_demo.git \
+#    && cd go_mod_demo && make output
 
 EXPOSE 7060
 
 WORKDIR /go_mod_demo/output
-CMD [ "bin/echo", "-c", "configs/echo.json" ]
+# CMD [ "bin/echo", "-c", "configs/echo.json" ]
+CMD [ "/bin/bash"]
