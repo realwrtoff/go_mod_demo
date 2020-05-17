@@ -16,7 +16,7 @@ ENV GOROOT=/usr/local/go
 
 # 添加代码和编译
 RUN git clone https://github.com/realwrtoff/go_mod_demo.git \
-    && cd go_mod_demo && make output
+    && cd go_mod_demo && git pull && make output
 
 EXPOSE 7060
 
