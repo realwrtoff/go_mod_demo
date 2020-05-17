@@ -5,8 +5,7 @@ RUN yum install -y epel-release \
     && yum reinstall -y glibc-common \
     && yum install -y make \
     && yum -y install python36u python36u-pip  python36u-devel \
-    && yum install -y git gcc \
-    && makedir -p /app
+    && yum install -y git gcc
 
 RUN ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
 RUN echo "Asia/Shanghai" >> /etc/timezone
