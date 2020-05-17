@@ -20,6 +20,5 @@ RUN git clone https://github.com/realwrtoff/go_mod_demo.git \
 
 EXPOSE 7060
 
-WORKDIR /go_mod_demo/output
-# CMD [ "bin/echo", "-c", "configs/echo.json" ]
-CMD [ "/bin/bash"]
+WORKDIR /go_mod_demo/output/tpl-go-http
+CMD [ "bin/echo", "-c", "configs/echo.json" ]

@@ -13,20 +13,21 @@ def main():
         action = 'xx'
     else:
         action = args[1]
-    url = 'http://127.0.0.1:7060/{0}'.format(action)
+    #url = 'http://127.0.0.1:7060/{0}'.format(action)
+    url = 'http://haina.equblock.com/{0}'.format(action)
     if action == 'channel':
-        advertiser_url = 'http://127.0.0.1:21688/click'
+        advertiser_url = 'http://advertise.equblock.com/click'
         params = {
             'pub': 'didazhuan',
             'cid': 'ddz_xxx',
             'status': 1,
-            'billing': 1,
+            'billing': 'active',
             'url': advertiser_url,
             'origin_cid': 'guahao',
             'name': 'haina'
         }
     elif action == 'click':
-        callback_url = 'http://127.0.0.1:21688/install?f=中国'
+        callback_url = 'http://channel.equblock.com/install?name=token&type=callback'
         params = {
             'pub': 'didazhuan',
             'cid': 'ddz_xxx',
@@ -37,9 +38,9 @@ def main():
             'idfa': 'fengmin-de-ipnone',
             'callback': callback_url
         }
-    elif action == 'install':
+    elif action in ['install', 'active']:
         params = {
-            'click_id': '5ebfdfeae5994eba616dab91'
+            'click_id': args[2]
         }
     else:
         print('action {0} not support'.format(action))

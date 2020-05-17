@@ -47,7 +47,7 @@ func TestMongo_Ping(t *testing.T) {
 
 func TestMongo_Insert(t *testing.T)  {
 	addrs := []string{"127.0.0.1:21617"}
-	ago := NewMongo("", "", "haina", "guaha", 30, addrs)
+	ago := NewMongo("", "", "haina", "ceshi", 30, addrs)
 	if err := ago.Connect(); err == nil {
 		clickId := bson.NewObjectId()
 		type Doc struct {

@@ -41,7 +41,7 @@ func (s *Service) Active(rid string, c *gin.Context) (interface{}, interface{}, 
 		return nil, nil, http.StatusNotFound, fmt.Errorf("active token[%v] cid[%v] not found", clkIns.Token, clkIns.Cid)
 	}
 
-	if s.channel[clkIns.Token][clkIns.Cid].Billing == ACTIVE {
+	if s.channel[clkIns.Token][clkIns.Cid].Billing == "active" {
 		s.channel[clkIns.Token][clkIns.Cid].Counter += 1
 		var reduce bool
 		// 需要扣量

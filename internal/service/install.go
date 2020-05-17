@@ -41,7 +41,7 @@ func (s *Service) Install(rid string, c *gin.Context) (interface{}, interface{},
 		return nil, nil, http.StatusNotFound, fmt.Errorf("click token[%v] cid[%v] not found", clkIns.Token, clkIns.Cid)
 	}
 
-	if s.channel[clkIns.Token][clkIns.Cid].Billing == INSTALL {
+	if s.channel[clkIns.Token][clkIns.Cid].Billing == "install" {
 		s.channel[clkIns.Token][clkIns.Cid].Counter += 1
 		var reduce bool
 		// 需要扣量
