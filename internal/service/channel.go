@@ -54,7 +54,9 @@ func (s *Service) Channel(rid string, c *gin.Context) (interface{}, interface{},
 			Counter: req.Counter,
 			Step:    req.Step,
 			Url:     unescapeUrl,
+			OriginCid: req.OriginCid,
 			Name:    req.Name,
+			Billing: req.Billing,
 		}
 	} else {
 		// 更新
@@ -74,8 +76,14 @@ func (s *Service) Channel(rid string, c *gin.Context) (interface{}, interface{},
 			}
 			s.channel[req.Token][req.CampaignId].Url = unescapeUrl
 		}
+		if len(req.OriginCid) != 0 {
+			s.channel[req.Token][req.CampaignId].OriginCid = req.OriginCid
+		}
 		if len(req.Name) != 0 {
 			s.channel[req.Token][req.CampaignId].Name = req.Name
+		}
+		if len(req.Billing) != 0 {
+			s.channel[req.Token][req.CampaignId].Billing = req.Billing
 		}
 	}
 	return req, &ChannelRes{
