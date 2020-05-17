@@ -14,7 +14,7 @@ type ChannelCid struct {
 	Url       string `form:"url" json:"url,omitempty"`               // 单子广告主的请求地址
 	OriginCid string `form:"origin_cid" json:"origin_cid,omitempty"` // 请求广告主的身份
 	Name      string `form:"name" json:"name,omitempty"`             // 请求广告主的身份
-	Billing   string `form:"billing" json:"billing,omitempty"`       // 计费类型 install, active
+	Billing   string `form:"billing" json:"billing,omitempty"`       // 计费类型 install, active ?
 }
 
 type ChannelReq struct {
