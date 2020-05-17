@@ -1,19 +1,11 @@
 FROM centos:centos7
 
 RUN yum install -y epel-release \
-    && yum -y install https://centos7.iuscommunity.org/ius-release.rpm \
     && yum reinstall -y glibc-common \
     && yum install -y make \
-    && yum -y install python36u python36u-pip  python36u-devel \
-    && yum install -y git gcc
-
-RUN ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
-RUN echo "Asia/Shanghai" >> /etc/timezone
-
-# python3
-COPY requirements.txt /
-RUN pip3 install --upgrade pip  --user -i http://mirrors.aliyun.com/pypi/simple/ --trusted-host mirrors.aliyun.com
-RUN pip3 install --user -r requirements.txt -i http://mirrors.aliyun.com/pypi/simple/ --trusted-host mirrors.aliyun.com
+    && yum install -y git gcc \
+    && ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime \
+    && echo "Asia/Shanghai" >> /etc/timezone
 
 # golang
 ENV GOPROXY=https://goproxy.io
@@ -23,8 +15,8 @@ ENV PATH=$PATH:/usr/local/go/bin
 ENV GOROOT=/usr/local/go
 
 # 添加代码和编译
-# RUN git clone https://github.com/realwrtoff/go_mod_demo.git \
-#    && cd go_mod_demo && make output
+RUN git clone https://github.com/realwrtoff/go_mod_demo.git \
+    && cd go_mod_demo && make output
 
 EXPOSE 7060
 
