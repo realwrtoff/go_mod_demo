@@ -5,11 +5,11 @@
             "*"
         ],
         "cookieSecure": true,
-        "cookieDomain": "echo.hatlonely.com"
+        "cookieDomain": "www.equblock.com"
     },
     "mongo": {
         "addrs": [
-            "127.0.0.1:21617"
+            "10.0.1.31:21617"
         ],
         "username": "",
         "password": "",
@@ -18,7 +18,7 @@
         "timeout": 30
     },
     "es": {
-        "uri": "http://52.130.80.56:21692"
+        "uri": "http://10.0.1.30:21692"
     },
     "logger": {
         "info": {
