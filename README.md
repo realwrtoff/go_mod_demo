@@ -19,8 +19,8 @@ This is a web program demo by using gin frame. You can learn makefile, behave, d
 
 ## Contact Us
 
-Mail: hatlonely@foxmail.com
+Mail: fmj_912@163.com
 
-QQ: 596150637
+QQ: 380225835
 
 Github: [hpifu](https://github.com/hpifu)

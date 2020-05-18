@@ -7,25 +7,24 @@ import (
 	"net/url"
 )
 
-type ChannelCid struct {
-	Status    int    `form:"status" json:"status,omitempty"`         // 单子状态
-	Counter   int    `form:"cnt" json:"cnt,omitempty"`               // 单子计数器
-	Step      int    `form:"step" json:"step,omitempty"`             // 单子步长
-	Url       string `form:"url" json:"url,omitempty"`               // 单子广告主的请求地址
-	OriginCid string `form:"origin_cid" json:"origin_cid,omitempty"` // 请求广告主的身份
-	Name      string `form:"name" json:"name,omitempty"`             // 请求广告主的身份
-	Billing   string `form:"billing" json:"billing,omitempty"`       // 计费类型 install, active ?
+type CidInfo struct {
+	Status         int    `form:"status" json:"status,omitempty"`                   // 单子状态
+	Counter        int    `form:"counter" json:"counter,omitempty"`                 // 单子计数器
+	Step           int    `form:"step" json:"step,omitempty"`                       // 单子步长
+	AdvertiserAddr string `form:"advertiser_addr" json:"advertiser_addr,omitempty"` // 单子广告主的请求地址
+	AdvertiserCid  string `form:"advertiser_cid" json:"advertiser_cid,omitempty"`   // 请求广告主的身份
+	MyName         string `form:"my_name" json:"my_name,omitempty"`                 // 请求广告主的身份
+	BillingType    string `form:"billing_type" json:"billing_type,omitempty"`       // 计费类型 install, active ?
 }
 
 type ChannelReq struct {
-	Token      string `form:"pub"  json:"pub,omitempty"` // 渠道token
-	CampaignId string `form:"cid" json:"cid,omitempty"`  // 单子id
-	ChannelCid        // 渠道单子信息
+	Pub     string `form:"pub"  json:"pub,omitempty"` // 渠道
+	Cid     string `form:"cid" json:"cid,omitempty"`  // 单子id
+	CidInfo                                           // 渠道单子信息
 }
 
 type ChannelRes struct {
 	Message string     `form:"message" json:"message"`
-	Channel ChannelReq `form:"channel" json:"channel"`
 }
 
 // 设置渠道和单子的映射， 存储单子相关信息
@@ -33,61 +32,69 @@ func (s *Service) Channel(rid string, c *gin.Context) (interface{}, interface{},
 	req := &ChannelReq{}
 
 	if err := c.Bind(req); err != nil {
-		return nil, nil, http.StatusBadRequest, fmt.Errorf("bind failed. err: [%v]", err)
+		return nil, nil, http.StatusBadRequest, fmt.Errorf("rid[%s] bind failed. err: [%v]", rid, err)
 	}
 
-	if s.channel[req.Token] == nil {
-		s.channel[req.Token] = make(map[string]*ChannelCid)
+	res := &ChannelRes{
+		Message: "",
 	}
-	if s.channel[req.Token][req.CampaignId] == nil {
+
+	key := fmt.Sprintf("%s_%s", req.Pub, req.Cid)
+	value, ok := s.pubCidCfg.Get(key)
+	if !ok {
 		// urldecode 广告主url
-		unescapeUrl, err := url.QueryUnescape(req.Url)
+		unescapeUrl, err := url.QueryUnescape(req.AdvertiserAddr)
 		if err != nil {
-			return req, &ChannelRes{
-				Message: err.Error(),
-				Channel: *req,
-			}, http.StatusOK, nil
+			res.Message = err.Error()
+			return req, res, http.StatusInternalServerError, nil
 		}
 		// 初始化
-		s.channel[req.Token][req.CampaignId] = &ChannelCid{
-			Status:  req.Status,
-			Counter: req.Counter,
-			Step:    req.Step,
-			Url:     unescapeUrl,
-			OriginCid: req.OriginCid,
-			Name:    req.Name,
-			Billing: req.Billing,
+		cfg := &CidInfo{
+			Status:         req.Status,
+			Counter:        req.Counter,
+			Step:           req.Step,
+			AdvertiserAddr: unescapeUrl,
+			AdvertiserCid:  req.AdvertiserCid,
+			MyName:         req.MyName,
+			BillingType:    req.BillingType,
 		}
+		s.pubCidCfg.Set(key, cfg)
+		res.Message = fmt.Sprintf("add pub %s cid %s advertiser addr %s ok", req.Pub, req.Cid, req.AdvertiserAddr)
 	} else {
+		cidInfo := value.(*CidInfo)
 		// 更新
+		res.Message = fmt.Sprintf("update pub %s cid %s set", req.Pub, req.Cid)
 		if req.Status != 0 {
-			s.channel[req.Token][req.CampaignId].Status = req.Status
+			cidInfo.Status = req.Status
+			res.Message += fmt.Sprintf(" status=[%d]", req.Status)
 		}
 		if req.Step != 0 {
-			s.channel[req.Token][req.CampaignId].Step = req.Step
+			cidInfo.Step = req.Step
+			res.Message += fmt.Sprintf(" step=[%d]", req.Step)
 		}
-		if len(req.Url) != 0 {
-			unescapeUrl, err := url.QueryUnescape(req.Url)
+		if len(req.AdvertiserAddr) != 0 {
+			unescapeUrl, err := url.QueryUnescape(req.AdvertiserAddr)
 			if err != nil {
-				return req, &ChannelRes{
-					Message: err.Error(),
-					Channel: *req,
-				}, http.StatusOK, nil
+				res.Message = err.Error()
+				return req, res, http.StatusOK, nil
 			}
-			s.channel[req.Token][req.CampaignId].Url = unescapeUrl
+			cidInfo.AdvertiserAddr = unescapeUrl
+			res.Message += fmt.Sprintf(" advertiser_url=[%s]", unescapeUrl)
 		}
-		if len(req.OriginCid) != 0 {
-			s.channel[req.Token][req.CampaignId].OriginCid = req.OriginCid
+		if len(req.AdvertiserCid) != 0 {
+			cidInfo.AdvertiserCid = req.AdvertiserCid
+			res.Message += fmt.Sprintf(" advertiser_cid=[%s]", req.AdvertiserCid)
 		}
-		if len(req.Name) != 0 {
-			s.channel[req.Token][req.CampaignId].Name = req.Name
+		if len(req.MyName) != 0 {
+			cidInfo.MyName = req.MyName
+			res.Message += fmt.Sprintf(" my_name=[%s]", req.MyName)
 		}
-		if len(req.Billing) != 0 {
-			s.channel[req.Token][req.CampaignId].Billing = req.Billing
+		if len(req.BillingType) != 0 {
+			cidInfo.BillingType = req.BillingType
+			res.Message += fmt.Sprintf(" billing_type=[%s]", req.BillingType)
 		}
+		// 无需写回，已经更新
+		// s.pubCidCfg.Set(key, cidInfo)
 	}
-	return req, &ChannelRes{
-		Message: "update",
-		Channel: *req,
-	}, http.StatusOK, nil
+	return req, res, http.StatusOK, nil
 }

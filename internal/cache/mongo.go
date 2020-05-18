@@ -1,4 +1,4 @@
-package mongo
+package cache
 
 import (
 	"gopkg.in/mgo.v2"

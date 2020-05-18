@@ -1,4 +1,4 @@
-package mongo
+package cache
 
 import (
 	"gopkg.in/mgo.v2/bson"
@@ -20,7 +20,7 @@ func TestMongo_Connect(t *testing.T) {
 	if err := ago.Connect(); err != nil {
 		t.Errorf("connect mongdb [%s] failed [%s]", ago.Addrs, err.Error())
 	} else {
-		t.Logf("connect mongo %s success\n", addrs)
+		t.Logf("connect cache %s success\n", addrs)
 	}
 	ago.Close()
 }
@@ -35,12 +35,12 @@ func TestMongo_Ping(t *testing.T) {
 	ago.TimeOut = 30
 	if err := ago.Connect(); err == nil {
 		if err = ago.Ping(); err != nil {
-			t.Errorf("ping mongo %s failed[%s]", addrs, err.Error())
+			t.Errorf("ping cache %s failed[%s]", addrs, err.Error())
 		} else {
-			t.Logf("ping mongo %s success\n", addrs)
+			t.Logf("ping cache %s success\n", addrs)
 		}
 	} else {
-		t.Errorf("connect mongo %s failed[%s]", addrs, err.Error())
+		t.Errorf("connect cache %s failed[%s]", addrs, err.Error())
 	}
 	ago.Close()
 }
@@ -74,6 +74,6 @@ func TestMongo_Insert(t *testing.T)  {
 			t.Log(*rdDoc)
 		}
 	} else {
-		t.Errorf("connect mongo %s failed[%s]", addrs, err.Error())
+		t.Errorf("connect cache %s failed[%s]", addrs, err.Error())
 	}
 }

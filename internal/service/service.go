@@ -2,22 +2,17 @@ package service
 
 import (
 	"github.com/hpifu/go-kit/hhttp"
-	"github.com/realwrtoff/go_mod_demo/internal/mongo"
+	"github.com/realwrtoff/go_mod_demo/internal/cache"
 	"github.com/sirupsen/logrus"
-	"time"
 )
 
-var HttpClients *hhttp.HttpClient
-
-func init()  {
-	HttpClients = hhttp.NewHttpClient(20, 200*time.Millisecond, 200*time.Millisecond)
-}
 
 type Service struct {
 	secure    bool
 	domain    string
-	mgo     *mongo.Mongo
-	channel map[string]map[string]*ChannelCid
+	mgo     *cache.Mongo
+	pubCidCfg   *cache.MemKv
+	httpClient  *hhttp.HttpClient
 	infoLog   *logrus.Logger
 	warnLog   *logrus.Logger
 	accessLog *logrus.Logger
@@ -29,18 +24,19 @@ func (s *Service) SetLogger(infoLog, warnLog, accessLog *logrus.Logger) {
 	s.accessLog = accessLog
 }
 
-func (s *Service) SetMongo(mgo *mongo.Mongo) {
-	s.mgo = mgo
-}
-
 func NewService(
 	secure bool,
 	domain string,
+	mgo *cache.Mongo,
+	pubCidCfg *cache.MemKv,
+	httpClient *hhttp.HttpClient,
 ) *Service {
 	return &Service{
 		secure:    secure,
 		domain:    domain,
-		channel: make(map[string]map[string]*ChannelCid),
+		mgo: mgo,
+		pubCidCfg: pubCidCfg,
+		httpClient: httpClient,
 		infoLog:   logrus.New(),
 		warnLog:   logrus.New(),
 		accessLog: logrus.New(),

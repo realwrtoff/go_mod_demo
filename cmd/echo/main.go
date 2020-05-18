@@ -14,7 +14,7 @@ import (
 	"github.com/hpifu/go-kit/logger"
 	rotatelogs "github.com/lestrrat-go/file-rotatelogs"
 	"github.com/olivere/elastic/v7"
-	"github.com/realwrtoff/go_mod_demo/internal/mongo"
+	"github.com/realwrtoff/go_mod_demo/internal/cache"
 	"github.com/realwrtoff/go_mod_demo/internal/service"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/sohlich/elogrus.v7"
@@ -36,12 +36,12 @@ type Options struct {
 		CookieDomain string   `hflag:"usage: cookie domain"`
 	}
 	Mongo struct {
-		Addrs []string `hflag:"usage: mongo address" hdef:"127.0.0.1:27017"`
-		Username       string `hflag:"usage: mongo username"`
-		Password       string `hflag:"usage: mongo password"`
-		DbName         string `hflag:"usage: mongo db name"`
-		CollectionName string `hflag:"usage: mongo collection name"`
-		Timeout        int `hflag:"usage: mongo timeout"`
+		Addrs []string `hflag:"usage: cache address" hdef:"127.0.0.1:27017"`
+		Username       string `hflag:"usage: cache username"`
+		Password       string `hflag:"usage: cache password"`
+		DbName         string `hflag:"usage: cache db name"`
+		CollectionName string `hflag:"usage: cache collection name"`
+		Timeout        int `hflag:"usage: cache timeout"`
 	}
 	Es struct {
 		Uri string `hflag:"usage: elasticsearch address"`
@@ -114,8 +114,8 @@ func main() {
 	}
 	accessLog.Hooks.Add(hook)
 
-	// init mongo
-	mgo := mongo.NewMongo(options.Mongo.Username, options.Mongo.Password,
+	// init cache
+	mgo := cache.NewMongo(options.Mongo.Username, options.Mongo.Password,
 		options.Mongo.DbName, options.Mongo.CollectionName,
 		options.Mongo.Timeout, options.Mongo.Addrs)
 	_ = mgo.Connect()
@@ -123,11 +123,12 @@ func main() {
 		panic(err)
 	}
 	fmt.Println("connect mogo ok")
+	pubCidCfg := cache.NewMemKv()
+	httpClient := hhttp.NewHttpClient(20, 200*time.Millisecond, 200*time.Millisecond)
 
 	// init services
-	svc := service.NewService(options.Service.CookieSecure, options.Service.CookieDomain)
+	svc := service.NewService(options.Service.CookieSecure, options.Service.CookieDomain, mgo, pubCidCfg, httpClient)
 	svc.SetLogger(infoLog, warnLog, accessLog)
-	svc.SetMongo(mgo)
 
 	// init gin
 	gin.SetMode(gin.ReleaseMode)
@@ -136,7 +137,7 @@ func main() {
 	r.Use(cors.New(cors.Config{
 		AllowOrigins:     options.Service.AllowOrigins,
 		AllowMethods:     []string{"PUT", "POST", "GET", "OPTIONS"},
-		AllowHeaders:     []string{"Origin", "Content-Type", "Content-Length", "Accept-Encoding", "X-CSRF-Token", "Authorization", "Accept", "Cache-Control", "X-Requested-With"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Content-Length", "Accept-Encoding", "X-CSRF-Pub", "Authorization", "Accept", "Cache-Control", "X-Requested-With"},
 		AllowCredentials: true,
 	}))
 

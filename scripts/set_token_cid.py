@@ -14,17 +14,17 @@ def main():
     else:
         action = args[1]
     #url = 'http://127.0.0.1:7060/{0}'.format(action)
-    url = 'http://haina.equblock.com/{0}'.format(action)
+    url = 'http://52.130.80.56:21668/{0}'.format(action)
     if action == 'channel':
         advertiser_url = 'http://advertise.equblock.com/click'
         params = {
             'pub': 'didazhuan',
             'cid': 'ddz_xxx',
             'status': 1,
-            'billing': 'active',
-            'url': advertiser_url,
-            'origin_cid': 'guahao',
-            'name': 'haina'
+            'advertiser_addr': advertiser_url,
+            'advertiser_cid': 'guahao',
+            'my_name': 'haina',
+            'billing_type': 'active',
         }
     elif action == 'click':
         callback_url = 'http://channel.equblock.com/install?name=token&type=callback'

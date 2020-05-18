@@ -23,6 +23,6 @@ func (s *Service) Echo(rid string, c *gin.Context) (interface{}, interface{}, in
 	}
 
 	return req, &EchoRes{
-		Message: req.Message,
+		Message: fmt.Sprintf("%s %s", rid, req.Message),
 	}, http.StatusOK, nil
 }

@@ -20,55 +20,69 @@ func (s *Service) Install(rid string, c *gin.Context) (interface{}, interface{},
 	req := &InstallReq{}
 
 	if err := c.Bind(req); err != nil {
-		return nil, nil, http.StatusBadRequest, fmt.Errorf("bind failed. err: [%v]", err)
+		return nil, nil, http.StatusBadRequest, fmt.Errorf("rid[%s] bind failed. err: [%v]", rid, err)
 	}
+	s.infoLog.Infof("receive click_id %s install", req.ClickId)
 
+	res := &InstallRes{}
 	objId := bson.ObjectIdHex(req.ClickId)
 	rec := s.mgo.Collection.FindId(objId)
-	clkIns := &ClickInstall{}
-	if err := rec.One(clkIns); err != nil {
-		return nil, nil, http.StatusNotFound, fmt.Errorf("clickid [%v] not found. err: [%v]", req.ClickId, err)
+	record := &Record{}
+	if err := rec.One(record); err != nil {
+		res.Message = fmt.Sprintf("clickid [%v] not found. err: [%v]", req.ClickId, err)
+		s.warnLog.Warn(res.Message)
+		return nil, res, http.StatusNotFound, err
 	}
 	// 重复发送
-	if clkIns.RespTime != 0 {
-		return nil, nil, http.StatusAlreadyReported, fmt.Errorf("clickid [%v] duplicated", req.ClickId)
+	if record.RespTime != 0 {
+		res.Message = fmt.Sprintf("clickid [%v] duplicated", req.ClickId)
+		s.warnLog.Warn(res.Message)
+		return nil, res, http.StatusAlreadyReported, fmt.Errorf("clickid [%v] duplicated", req.ClickId)
 	}
 	// 查找扣量回调等配置信息
-	if s.channel[clkIns.Token] == nil {
-		return nil, nil, http.StatusNotFound, fmt.Errorf("click token [%v] not found", clkIns.Token)
+	key := fmt.Sprintf("%s_%s", record.Pub, record.Cid)
+	value, ok := s.pubCidCfg.Get(key)
+	if !ok {
+		res.Message = fmt.Sprintf("clickid [%v] key[%s] cid info not found", req.ClickId, key)
+		s.warnLog.Warn(res.Message)
+		return nil, res, http.StatusNotFound, fmt.Errorf("clickid [%v] key[%s] cid info not found", req.ClickId, key)
 	}
-	if s.channel[clkIns.Token][clkIns.Cid] == nil {
-		return nil, nil, http.StatusNotFound, fmt.Errorf("click token[%v] cid[%v] not found", clkIns.Token, clkIns.Cid)
-	}
+	cidInfo := value.(*CidInfo)
 
-	if s.channel[clkIns.Token][clkIns.Cid].Billing == "install" {
-		s.channel[clkIns.Token][clkIns.Cid].Counter += 1
+	if cidInfo.BillingType == "install" {
+		cidInfo.Counter += 1
 		var reduce bool
 		// 需要扣量
-		if s.channel[clkIns.Token][clkIns.Cid].Step > 0 {
-			if s.channel[clkIns.Token][clkIns.Cid].Counter % s.channel[clkIns.Token][clkIns.Cid].Step == 0 {
+		if cidInfo.Step > 0 {
+			if cidInfo.Counter % cidInfo.Step == 0 {
 				reduce = true
 			}
 		}
 		// 更新mongo
 		if err := s.mgo.Collection.UpdateId(objId, bson.M{"$set": bson.M{"resp_time": time.Now().Unix(), "reduce": reduce}}); err != nil{
-			return nil, nil, http.StatusInternalServerError, err
+			res.Message = err.Error()
+			s.warnLog.Errorf("update click_id %s resp_time & reduce failed.err[%s]", req.ClickId, res.Message)
+			return nil, res, http.StatusInternalServerError, err
 		}
 		// 回调
 		if !reduce {
-			callBack := HttpClients.GET(clkIns.CallBack, nil, nil, nil)
+			callBack := s.httpClient.GET(record.CallBack, nil, nil, nil)
 			if callBack.Err != nil {
-				s.warnLog.Infof("call back %s failed", clkIns.CallBack)
-				return nil, nil, http.StatusNotFound, fmt.Errorf("call back %s faild", clkIns.Cid)
+				s.warnLog.Infof("call back %s failed", record.CallBack)
+				res.Message = callBack.Err.Error()
+				return nil, res, http.StatusNotFound, fmt.Errorf("call back %s faild", record.Cid)
 			}
+		} else {
+			s.infoLog.Infof("call back %s reduced", record.CallBack)
 		}
 	} else {
 		// 更新mongo
 		if err := s.mgo.Collection.UpdateId(objId, bson.M{"$set": bson.M{"resp_time": time.Now().Unix()}}); err != nil{
-			return nil, nil, http.StatusInternalServerError, err
+			res.Message = err.Error()
+			s.warnLog.Errorf("update click_id %s resp_time failed.err[%s]", req.ClickId, res.Message)
+			return nil, res, http.StatusInternalServerError, err
 		}
 	}
-	return req, &InstallRes{
-		Message: "ok",
-	}, http.StatusOK, nil
+	res.Message = fmt.Sprintf("install %s ok", req.ClickId)
+	return req, res, http.StatusOK, nil
 }
