@@ -14,9 +14,9 @@ ENV PATH=$PATH:/usr/local/go/bin
 ENV GOROOT=/usr/local/go
 
 # 添加代码和编译
-ADD cmd /go_mod_demo/
-ADD configs /go_mod_demo/
-ADD internal /go_mod_demo/
+ADD cmd /go_mod_demo/cmd/
+ADD configs /go_mod_demo/configs/
+ADD internal /go_mod_demo/internal/
 ADD Makefile /go_mod_demo/
 RUN cd go_mod_demo && make output
 
