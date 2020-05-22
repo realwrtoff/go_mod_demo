@@ -5,7 +5,8 @@ RUN yum install -y epel-release \
     && yum install -y make \
     && yum install -y git gcc \
     && ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime \
-    && echo "Asia/Shanghai" >> /etc/timezone
+    && echo "Asia/Shanghai" >> /etc/timezone \
+    && mkdir -p /go_mod_demo/
 
 # golang
 ENV GOPROXY=https://goproxy.io
