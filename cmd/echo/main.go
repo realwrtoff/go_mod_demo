@@ -90,7 +90,9 @@ func main() {
 	}
 
 	fmt.Println("load config ok")
+	fmt.Println(options.Service)
 	fmt.Println(options.Mongo)
+	fmt.Println(options.Es)
 	// init logger
 	logs, err := logger.NewLoggerGroup([]*logger.Options{
 		&options.Logger.Info, &options.Logger.Warn, &options.Logger.Access,
@@ -124,7 +126,7 @@ func main() {
 	}
 	fmt.Println("connect mogo ok")
 	pubCidCfg := cache.NewMemKv()
-	httpClient := hhttp.NewHttpClient(20, 200*time.Millisecond, 200*time.Millisecond)
+	httpClient := hhttp.NewHttpClient(20, time.Second, time.Second)
 
 	// init services
 	svc := service.NewService(options.Service.CookieSecure, options.Service.CookieDomain, mgo, pubCidCfg, httpClient)
@@ -151,6 +153,7 @@ func main() {
 	r.GET("/click", d.Decorate(svc.Click))
 	r.GET("/install", d.Decorate(svc.Install))
 	r.GET("/active", d.Decorate(svc.Active))
+	r.GET("/callback/:name", d.Decorate(svc.Callback))
 
 	infoLog.Infof("%v init success, port [%v]", os.Args[0], options.Service.Port)
 

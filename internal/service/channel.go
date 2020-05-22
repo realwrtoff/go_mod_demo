@@ -13,6 +13,7 @@ type CidInfo struct {
 	Step           int    `form:"step" json:"step,omitempty"`                       // 单子步长
 	AdvertiserAddr string `form:"advertiser_addr" json:"advertiser_addr,omitempty"` // 单子广告主的请求地址
 	AdvertiserCid  string `form:"advertiser_cid" json:"advertiser_cid,omitempty"`   // 请求广告主的身份
+	AppId          string `form:"app_id" json:"app_id,omitempty"`                   // 广告ID
 	MyName         string `form:"my_name" json:"my_name,omitempty"`                 // 请求广告主的身份
 	BillingType    string `form:"billing_type" json:"billing_type,omitempty"`       // 计费类型 install, active ?
 }
@@ -20,11 +21,11 @@ type CidInfo struct {
 type ChannelReq struct {
 	Pub     string `form:"pub"  json:"pub,omitempty"` // 渠道
 	Cid     string `form:"cid" json:"cid,omitempty"`  // 单子id
-	CidInfo                                           // 渠道单子信息
+	CidInfo        // 渠道单子信息
 }
 
 type ChannelRes struct {
-	Message string     `form:"message" json:"message"`
+	Message string `form:"message" json:"message"`
 }
 
 // 设置渠道和单子的映射， 存储单子相关信息
@@ -55,6 +56,7 @@ func (s *Service) Channel(rid string, c *gin.Context) (interface{}, interface{},
 			Step:           req.Step,
 			AdvertiserAddr: unescapeUrl,
 			AdvertiserCid:  req.AdvertiserCid,
+			AppId: req.AppId,
 			MyName:         req.MyName,
 			BillingType:    req.BillingType,
 		}
@@ -84,6 +86,10 @@ func (s *Service) Channel(rid string, c *gin.Context) (interface{}, interface{},
 		if len(req.AdvertiserCid) != 0 {
 			cidInfo.AdvertiserCid = req.AdvertiserCid
 			res.Message += fmt.Sprintf(" advertiser_cid=[%s]", req.AdvertiserCid)
+		}
+		if len(req.AppId) != 0 {
+			cidInfo.AppId = req.AppId
+			res.Message += fmt.Sprintf(" app_id=[%s]", req.AppId)
 		}
 		if len(req.MyName) != 0 {
 			cidInfo.MyName = req.MyName

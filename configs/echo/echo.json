@@ -5,7 +5,7 @@
             "*"
         ],
         "cookieSecure": true,
-        "cookieDomain": "www.equblock.com"
+        "cookieDomain": "haina.equblock.com"
     },
     "mongo": {
         "addrs": [

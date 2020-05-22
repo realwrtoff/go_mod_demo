@@ -3,7 +3,7 @@
 
 import sys
 import getopt
-from urllib import parse
+# from urllib import parse
 import requests
 
 
@@ -13,21 +13,22 @@ def main():
         action = 'xx'
     else:
         action = args[1]
-    #url = 'http://127.0.0.1:7060/{0}'.format(action)
-    url = 'http://52.130.80.56:21668/{0}'.format(action)
+    url = 'http://127.0.0.1:7060/{0}'.format(action)
+    # url = 'http://52.130.80.56:21668/{0}'.format(action)
     if action == 'channel':
-        advertiser_url = 'http://advertise.equblock.com/click'
+        advertiser_url = 'http://advertiser.equblock.com/click'
         params = {
             'pub': 'didazhuan',
             'cid': 'ddz_xxx',
             'status': 1,
             'advertiser_addr': advertiser_url,
             'advertiser_cid': 'guahao',
+            'app_id': '110112114',
             'my_name': 'haina',
             'billing_type': 'active',
         }
     elif action == 'click':
-        callback_url = 'http://channel.equblock.com/install?name=token&type=callback'
+        callback_url = 'http://channel.equblock.com/callback?cid=ddz_xxx&idfa=fengmin-de-ipnone'
         params = {
             'pub': 'didazhuan',
             'cid': 'ddz_xxx',
@@ -42,6 +43,11 @@ def main():
         params = {
             'click_id': args[2]
         }
+    elif action in ['callback/install', 'callback/active']:
+        params = {
+            'dev_id': 'fengmin-de-ipnone',
+            'app_id': '110112114'
+        }
     else:
         print('action {0} not support'.format(action))
         sys.exit(-1)
@@ -49,7 +55,7 @@ def main():
     print('request {0}'.format(url))
     print('params {0}'.format(params))
     r = requests.get(url, params=params)
-    print('response status{0}, content [{1}]'.format(r.status_code, r.text))
+    print('response status {0}\ncontent {1}'.format(r.status_code, r.text))
 
 
 if __name__ == '__main__':

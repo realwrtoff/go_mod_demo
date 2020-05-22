@@ -3,6 +3,7 @@ package service
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 	"net/http"
 	"time"
@@ -12,7 +13,7 @@ type InstallReq struct {
 	ClickId string `form:"click_id"`
 }
 
-type InstallRes struct {
+type InstallResp struct {
 	Message string `form:"message" json:"message"`
 }
 
@@ -22,30 +23,33 @@ func (s *Service) Install(rid string, c *gin.Context) (interface{}, interface{},
 	if err := c.Bind(req); err != nil {
 		return nil, nil, http.StatusBadRequest, fmt.Errorf("rid[%s] bind failed. err: [%v]", rid, err)
 	}
-	s.infoLog.Infof("receive click_id %s install", req.ClickId)
+	s.infoLog.Infof("receive install callback [%v]", req)
 
-	res := &InstallRes{}
+	res := &InstallResp{}
+	var query *mgo.Query
 	objId := bson.ObjectIdHex(req.ClickId)
-	rec := s.mgo.Collection.FindId(objId)
+	query = s.mgo.Collection.FindId(objId)
+
+	
 	record := &Record{}
-	if err := rec.One(record); err != nil {
-		res.Message = fmt.Sprintf("clickid [%v] not found. err: [%v]", req.ClickId, err)
+	if err := query.One(record); err != nil {
+		res.Message = fmt.Sprintf("req [%v] not found. err: [%v]", req, err)
 		s.warnLog.Warn(res.Message)
 		return nil, res, http.StatusNotFound, err
 	}
 	// 重复发送
 	if record.RespTime != 0 {
-		res.Message = fmt.Sprintf("clickid [%v] duplicated", req.ClickId)
+		res.Message = fmt.Sprintf("req [%v] duplicated", req)
 		s.warnLog.Warn(res.Message)
-		return nil, res, http.StatusAlreadyReported, fmt.Errorf("clickid [%v] duplicated", req.ClickId)
+		return nil, res, http.StatusAlreadyReported, fmt.Errorf("req [%v] duplicated", req)
 	}
 	// 查找扣量回调等配置信息
 	key := fmt.Sprintf("%s_%s", record.Pub, record.Cid)
 	value, ok := s.pubCidCfg.Get(key)
 	if !ok {
-		res.Message = fmt.Sprintf("clickid [%v] key[%s] cid info not found", req.ClickId, key)
+		res.Message = fmt.Sprintf("req [%v] key[%s] cid info not found", req, key)
 		s.warnLog.Warn(res.Message)
-		return nil, res, http.StatusNotFound, fmt.Errorf("clickid [%v] key[%s] cid info not found", req.ClickId, key)
+		return nil, res, http.StatusNotFound, fmt.Errorf("req [%v] key[%s] cid info not found", req, key)
 	}
 	cidInfo := value.(*CidInfo)
 
@@ -59,9 +63,9 @@ func (s *Service) Install(rid string, c *gin.Context) (interface{}, interface{},
 			}
 		}
 		// 更新mongo
-		if err := s.mgo.Collection.UpdateId(objId, bson.M{"$set": bson.M{"resp_time": time.Now().Unix(), "reduce": reduce}}); err != nil{
+		if err := s.mgo.Collection.UpdateId(record.ClickId, bson.M{"$set": bson.M{"resp_time": time.Now().Unix(), "reduce": reduce}}); err != nil{
 			res.Message = err.Error()
-			s.warnLog.Errorf("update click_id %s resp_time & reduce failed.err[%s]", req.ClickId, res.Message)
+			s.warnLog.Errorf("update req[%v] resp_time & reduce failed.err[%s]", req, res.Message)
 			return nil, res, http.StatusInternalServerError, err
 		}
 		// 回调
@@ -77,12 +81,12 @@ func (s *Service) Install(rid string, c *gin.Context) (interface{}, interface{},
 		}
 	} else {
 		// 更新mongo
-		if err := s.mgo.Collection.UpdateId(objId, bson.M{"$set": bson.M{"resp_time": time.Now().Unix()}}); err != nil{
+		if err := s.mgo.Collection.UpdateId(record.ClickId, bson.M{"$set": bson.M{"resp_time": time.Now().Unix()}}); err != nil{
 			res.Message = err.Error()
-			s.warnLog.Errorf("update click_id %s resp_time failed.err[%s]", req.ClickId, res.Message)
+			s.warnLog.Errorf("update req [%v] resp_time failed.err[%s]", req, res.Message)
 			return nil, res, http.StatusInternalServerError, err
 		}
 	}
-	res.Message = fmt.Sprintf("install %s ok", req.ClickId)
+	res.Message = fmt.Sprintf("install [%v] ok", req)
 	return req, res, http.StatusOK, nil
 }

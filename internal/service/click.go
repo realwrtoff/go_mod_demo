@@ -10,53 +10,55 @@ import (
 )
 
 type ClickReq struct {
-	Pub        string `form:"pub" bson:"pub" json:"pub"`
-	CallBack   string `form:"callback" bson:"callback" json:"callback"`
-	Cid        string `form:"cid" bson:"cid" json:"cid"`
-	Sid        string `form:"sid" bson:"sid,omitempty" json:"sid,omitempty"`
-	Ip         string `form:"ip" bson:"ip,omitempty" json:"ip,omitempty"`
-	Os         string `form:"os" bson:"os,omitempty" json:"os,omitempty"`
-	OsVersion  string `form:"osversion" bson:"osversion,omitempty" json:"os_version,omitempty"`
-	DeviceType string `form:"devicetype" bson:"devicetype,omitempty" json:"device_type,omitempty"`
-	Idfa       string `form:"idfa" bson:"idfa,omitempty" json:"idfa,omitempty"`
-	IdfaMd5    string `form:"idfa_md5" bson:"idfa_md5,omitempty" json:"idfa_md5,omitempty"`
-	Imei       string `form:"imei" bson:"imei,omitempty" json:"imei,omitempty"`
-	ImeiMd5 string `form:"idfa_md5" bson:"imei_md5,omitempty" json:"imei_md5,omitempty"`
-	AndroidId string `form:"androidid" bson:"androidid,omitempty" json:"androidid,omitempty"`
-	AndroidIdMd5 string `form:"androidid_md5" bson:"androidid_md5,omitempty" json:"androidid_md5,omitempty"`
-	AdvertiserId string `form:"advertiserid" bson:"advertiserid,omitempty" json:"advertiser_id,omitempty"`
+	Pub             string `form:"pub" bson:"pub" json:"pub"`
+	CallBack        string `form:"callback" bson:"callback" json:"callback"`
+	Cid             string `form:"cid" bson:"cid" json:"cid"`
+	Sid             string `form:"sid" bson:"sid,omitempty" json:"sid,omitempty"`
+	Ip              string `form:"ip" bson:"ip,omitempty" json:"ip,omitempty"`
+	Os              string `form:"os" bson:"os,omitempty" json:"os,omitempty"`
+	OsVersion       string `form:"osversion" bson:"osversion,omitempty" json:"os_version,omitempty"`
+	DeviceType      string `form:"devicetype" bson:"devicetype,omitempty" json:"device_type,omitempty"`
+	Idfa            string `form:"idfa" bson:"idfa,omitempty" json:"idfa,omitempty"`
+	IdfaMd5         string `form:"idfa_md5" bson:"idfa_md5,omitempty" json:"idfa_md5,omitempty"`
+	Imei            string `form:"imei" bson:"imei,omitempty" json:"imei,omitempty"`
+	ImeiMd5         string `form:"idfa_md5" bson:"imei_md5,omitempty" json:"imei_md5,omitempty"`
+	AndroidId       string `form:"androidid" bson:"androidid,omitempty" json:"androidid,omitempty"`
+	AndroidIdMd5    string `form:"androidid_md5" bson:"androidid_md5,omitempty" json:"androidid_md5,omitempty"`
+	AdvertiserId    string `form:"advertiserid" bson:"advertiserid,omitempty" json:"advertiser_id,omitempty"`
 	AdvertiserIdMd5 string `form:"advertiserid_md5" bson:"advertiserid_md5,omitempty" json:"advertiserid_md5,omitempty"`
 }
 
 type ClickRes struct {
-	Code int `form:"code" json:"code"`
-	Message string `form:"message" json:"message"`
-	Data *ClickReq `form:"data" json:"data"`
+	Code    int       `form:"code" json:"code"`
+	Message string    `form:"message" json:"message"`
+	Data    *ClickReq `form:"data" json:"data"`
 }
 
 // 需要确认Click存储时是否嵌套
 type Record struct {
-	ClickId    bson.ObjectId `bson:"_id" json:"click_id"`
-	ReqTime    int64         `bson:"req_time,omitempty" json:"req_time,omitempty"`
-	RespTime   int64         `bson:"resp_time,omitempty" json:"resp_time,omitempty"`
-	ActiveTime int64         `bson:"active_time,omitempty" json:"active_time,omitempty"`
-	Reduce     bool          `bson:"reduce,omitempty" json:"reduce,omitempty"`
-	Pub        string        `form:"pub" bson:"pub" json:"pub"`
-	CallBack   string        `form:"callback" bson:"callback" json:"callback"`
-	Cid        string        `form:"cid" bson:"cid" json:"cid"`
-	Sid        string        `form:"sid" bson:"sid,omitempty" json:"sid,omitempty"`
-	Ip         string        `form:"ip" bson:"ip,omitempty" json:"ip,omitempty"`
-	Os         string        `form:"os" bson:"os,omitempty" json:"os,omitempty"`
-	OsVersion  string        `form:"osversion" bson:"osversion,omitempty" json:"os_version,omitempty"`
-	DeviceType string        `form:"devicetype" bson:"devicetype,omitempty" json:"device_type,omitempty"`
-	Idfa       string        `form:"idfa" bson:"idfa,omitempty" json:"idfa,omitempty"`
-	IdfaMd5    string        `form:"idfa_md5" bson:"idfa_md5,omitempty" json:"idfa_md5,omitempty"`
-	Imei       string        `form:"imei" bson:"imei,omitempty" json:"imei,omitempty"`
-	ImeiMd5 string `form:"idfa_md5" bson:"imei_md5,omitempty" json:"imei_md5,omitempty"`
-	AndroidId string `form:"androidid" bson:"androidid,omitempty" json:"androidid,omitempty"`
-	AndroidIdMd5 string `form:"androidid_md5" bson:"androidid_md5,omitempty" json:"androidid_md5,omitempty"`
-	AdvertiserId string `form:"advertiserid" bson:"advertiserid,omitempty" json:"advertiser_id,omitempty"`
-	AdvertiserIdMd5 string `form:"advertiserid_md5" bson:"advertiserid_md5,omitempty" json:"advertiserid_md5,omitempty"`
+	ClickId         bson.ObjectId `bson:"_id" json:"click_id"`
+	DevId           string        `form:"dev_id" bson:"dev_id,omitempty" json:"dev_id, omitempty"`
+	AppId           string        `form:"app_id" bson:"app_id,omitempty" json:"app_id, omitempty"`
+	ReqTime         int64         `bson:"req_time,omitempty" json:"req_time,omitempty"`
+	RespTime        int64         `bson:"resp_time,omitempty" json:"resp_time,omitempty"`
+	ActiveTime      int64         `bson:"active_time,omitempty" json:"active_time,omitempty"`
+	Reduce          bool          `bson:"reduce,omitempty" json:"reduce,omitempty"`
+	Pub             string        `form:"pub" bson:"pub" json:"pub"`
+	CallBack        string        `form:"callback" bson:"callback" json:"callback"`
+	Cid             string        `form:"cid" bson:"cid" json:"cid"`
+	Sid             string        `form:"sid" bson:"sid,omitempty" json:"sid,omitempty"`
+	Ip              string        `form:"ip" bson:"ip,omitempty" json:"ip,omitempty"`
+	Os              string        `form:"os" bson:"os,omitempty" json:"os,omitempty"`
+	OsVersion       string        `form:"osversion" bson:"osversion,omitempty" json:"os_version,omitempty"`
+	DeviceType      string        `form:"devicetype" bson:"devicetype,omitempty" json:"device_type,omitempty"`
+	Idfa            string        `form:"idfa" bson:"idfa,omitempty" json:"idfa,omitempty"`
+	IdfaMd5         string        `form:"idfa_md5" bson:"idfa_md5,omitempty" json:"idfa_md5,omitempty"`
+	Imei            string        `form:"imei" bson:"imei,omitempty" json:"imei,omitempty"`
+	ImeiMd5         string        `form:"idfa_md5" bson:"imei_md5,omitempty" json:"imei_md5,omitempty"`
+	AndroidId       string        `form:"androidid" bson:"androidid,omitempty" json:"androidid,omitempty"`
+	AndroidIdMd5    string        `form:"androidid_md5" bson:"androidid_md5,omitempty" json:"androidid_md5,omitempty"`
+	AdvertiserId    string        `form:"advertiserid" bson:"advertiserid,omitempty" json:"advertiser_id,omitempty"`
+	AdvertiserIdMd5 string        `form:"advertiserid_md5" bson:"advertiserid_md5,omitempty" json:"advertiserid_md5,omitempty"`
 }
 
 func (s *Service) Click(rid string, c *gin.Context) (interface{}, interface{}, int, error) {
@@ -67,9 +69,9 @@ func (s *Service) Click(rid string, c *gin.Context) (interface{}, interface{}, i
 	}
 
 	res := &ClickRes{
-		Code: 200,
+		Code:    200,
 		Message: "",
-		Data: req,
+		Data:    req,
 	}
 
 	// 检查设备参数
@@ -94,31 +96,33 @@ func (s *Service) Click(rid string, c *gin.Context) (interface{}, interface{}, i
 	// 写入mongo
 	clickId := bson.NewObjectId()
 	clickInfo := &Record{
-		ClickId:    clickId,
-		Pub:        req.Pub,
-		CallBack:   req.CallBack,
-		Cid:        req.Cid,
-		Sid:        req.Sid,
-		Ip:         req.Ip,
-		Os:         req.Os,
-		OsVersion:  req.OsVersion,
-		DeviceType: req.DeviceType,
-		Idfa:       req.Idfa,
-		IdfaMd5:    req.IdfaMd5,
-		Imei:       req.Imei,
-		ImeiMd5: req.ImeiMd5,
-		AndroidId: req.AndroidId,
-		AndroidIdMd5: req.AndroidIdMd5,
-		AdvertiserId: req.AdvertiserId,
+		ClickId:         clickId,
+		DevId:           devId,
+		AppId:           cidInfo.AppId,
+		Pub:             req.Pub,
+		CallBack:        req.CallBack,
+		Cid:             req.Cid,
+		Sid:             req.Sid,
+		Ip:              req.Ip,
+		Os:              req.Os,
+		OsVersion:       req.OsVersion,
+		DeviceType:      req.DeviceType,
+		Idfa:            req.Idfa,
+		IdfaMd5:         req.IdfaMd5,
+		Imei:            req.Imei,
+		ImeiMd5:         req.ImeiMd5,
+		AndroidId:       req.AndroidId,
+		AndroidIdMd5:    req.AndroidIdMd5,
+		AdvertiserId:    req.AdvertiserId,
 		AdvertiserIdMd5: req.AdvertiserIdMd5,
-		ReqTime: time.Now().Unix(),
+		ReqTime:         time.Now().Unix(),
 	}
 	s.infoLog.Infof("receive pub_cid %s request click id %s.", key, clickId.Hex())
 
 	if err := s.mgo.Collection.Insert(clickInfo); err != nil {
 		res.Code = http.StatusInternalServerError
 		res.Message = err.Error()
-		s.warnLog.Error("insert cache failed, doc ",*clickInfo, " error ", err.Error())
+		s.warnLog.Error("insert cache failed, doc ", *clickInfo, " error ", err.Error())
 		return req, res, http.StatusInternalServerError, nil
 	}
 
@@ -133,7 +137,7 @@ func (s *Service) Click(rid string, c *gin.Context) (interface{}, interface{}, i
 	return req, res, http.StatusOK, nil
 }
 
-func (s *Service)RequestAdvertiser(req *ClickReq, clickId string, cidCfg *CidInfo) error{
+func (s *Service) RequestAdvertiser(req *ClickReq, clickId string, cidCfg *CidInfo) error {
 	// 信息替换
 	adReq := make(map[string]interface{})
 	adReq["pub"] = cidCfg.MyName
@@ -191,4 +195,3 @@ func CheckReqDevId(req *ClickReq) string {
 	}
 	return ""
 }
-

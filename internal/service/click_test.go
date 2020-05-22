@@ -1,6 +1,10 @@
 package service
 
-import "testing"
+import (
+	"github.com/hpifu/go-kit/hhttp"
+	"testing"
+	"time"
+)
 
 func TestCheckReqDevId(t *testing.T) {
 	req := &ClickReq{}
@@ -13,5 +17,27 @@ func TestCheckReqDevId(t *testing.T) {
 		}
 	} else {
 		t.Error("what are you doing!!!")
+	}
+}
+
+func TestSubstr(t *testing.T)  {
+	m := "17744581949"
+	t.Log(m[:7])
+}
+
+func TestHttpGet(t *testing.T)  {
+	client := hhttp.NewHttpClient(20, 200*time.Millisecond, 200*time.Millisecond)
+
+	url := "http://advertiser.equblock.com/click"
+	params := make(map[string]interface {})
+	params["pub"] = "jim"
+	params["cid"] = "cid"
+	params["idfa"] = "fengming-phone"
+
+	res := client.Do("GET", url, nil, params, nil)
+	if res.Err != nil {
+		t.Errorf("response [%d][%s]", res.Status, res.Err.Error())
+	} else {
+		t.Log(string(res.Res))
 	}
 }
