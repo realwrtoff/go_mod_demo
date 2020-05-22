@@ -1,8 +1,6 @@
 FROM centos:centos7
 
-RUN yum install -y epel-release \
-    && yum reinstall -y glibc-common \
-    && yum install -y make \
+RUN yum install -y make \
     && yum install -y git gcc \
     && ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime \
     && echo "Asia/Shanghai" >> /etc/timezone \
