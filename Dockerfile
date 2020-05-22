@@ -17,6 +17,9 @@ ENV GOROOT=/usr/local/go
 ADD cmd /go_mod_demo/cmd/
 ADD configs /go_mod_demo/configs/
 ADD internal /go_mod_demo/internal/
+ADD scripts /go_mod_demo/scripts/
+ADD go.mod /go_mod_demo/
+ADD go.sum /go_mod_demo/
 ADD Makefile /go_mod_demo/
 RUN cd go_mod_demo && make output
 
