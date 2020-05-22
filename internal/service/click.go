@@ -142,6 +142,7 @@ func (s *Service) RequestAdvertiser(req *ClickReq, clickId string, cidCfg *CidIn
 	adReq := make(map[string]interface{})
 	adReq["pub"] = cidCfg.MyName
 	adReq["cid"] = cidCfg.AdvertiserCid
+	adReq["app_id"] = cidCfg.AppId
 	// 潜规则 BillingType要和router一致
 	callBack := fmt.Sprintf("http://%s/%s?click_id=%s", s.domain, cidCfg.BillingType, clickId)
 	escapeUrl := url.QueryEscape(callBack)
@@ -162,6 +163,8 @@ func (s *Service) RequestAdvertiser(req *ClickReq, clickId string, cidCfg *CidIn
 	adReq["advertiseridmd5"] = req.AdvertiserIdMd5
 
 	adUrl := cidCfg.AdvertiserAddr
+	s.infoLog.Info(adUrl)
+	s.infoLog.Info(adReq)
 	httpRes := s.httpClient.GET(adUrl, nil, adReq, nil)
 	if httpRes.Err != nil {
 		s.warnLog.Errorf("request %s params %v, response [%d][%s]", adUrl, adReq, httpRes.Status, httpRes.Err.Error())

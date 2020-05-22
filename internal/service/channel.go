@@ -104,3 +104,26 @@ func (s *Service) Channel(rid string, c *gin.Context) (interface{}, interface{},
 	}
 	return req, res, http.StatusOK, nil
 }
+
+// 设置渠道和单子的映射， 存储单子相关信息
+func (s *Service) GetChannel(rid string, c *gin.Context) (interface{}, interface{}, int, error) {
+	req := &ChannelReq{}
+
+	if err := c.Bind(req); err != nil {
+		return nil, nil, http.StatusBadRequest, fmt.Errorf("rid[%s] bind failed. err: [%v]", rid, err)
+	}
+
+	res := &ChannelRes{
+		Message: "",
+	}
+
+	key := fmt.Sprintf("%s_%s", req.Pub, req.Cid)
+	value, ok := s.pubCidCfg.Get(key)
+	if ok {
+		cidInfo := value.(*CidInfo)
+		res.Message = fmt.Sprintf("addr %s", cidInfo.AdvertiserAddr)
+	} else {
+		res.Message = key + " not found"
+	}
+	return req, res, http.StatusOK, nil
+}

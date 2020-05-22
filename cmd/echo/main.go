@@ -150,6 +150,7 @@ func main() {
 	})
 	r.GET("/echo", d.Decorate(svc.Echo))
 	r.GET("/channel", d.Decorate(svc.Channel))
+	r.GET("/getchannel", d.Decorate(svc.GetChannel))
 	r.GET("/click", d.Decorate(svc.Click))
 	r.GET("/install", d.Decorate(svc.Install))
 	r.GET("/active", d.Decorate(svc.Active))

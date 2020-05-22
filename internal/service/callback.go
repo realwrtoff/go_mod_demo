@@ -84,6 +84,7 @@ func (s *Service) Callback(rid string, c *gin.Context) (interface{}, interface{}
 		}
 		// 回调
 		if !reduce {
+			s.infoLog.Info(record.CallBack)
 			callBack := s.httpClient.GET(record.CallBack, nil, nil, nil)
 			if callBack.Err != nil {
 				s.warnLog.Infof("call back %s failed", record.CallBack)
