@@ -15,8 +15,11 @@ ENV PATH=$PATH:/usr/local/go/bin
 ENV GOROOT=/usr/local/go
 
 # 添加代码和编译
-RUN git clone https://github.com/realwrtoff/go_mod_demo.git \
-    && cd go_mod_demo && git pull && make output
+ADD cmd /go_mod_demo/
+ADD configs /go_mod_demo/
+ADD internal /go_mod_demo/
+ADD Makefile /go_mod_demo/
+RUN cd go_mod_demo && make output
 
 EXPOSE 7060
 
