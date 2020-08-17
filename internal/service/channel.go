@@ -121,7 +121,7 @@ func (s *Service) GetChannel(rid string, c *gin.Context) (interface{}, interface
 	value, ok := s.pubCidCfg.Get(key)
 	if ok {
 		cidInfo := value.(*CidInfo)
-		res.Message = fmt.Sprintf("addr %s", cidInfo.AdvertiserAddr)
+		res.Message = fmt.Sprintf("%v", cidInfo)
 	} else {
 		res.Message = key + " not found"
 	}

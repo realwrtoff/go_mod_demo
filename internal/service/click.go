@@ -10,10 +10,9 @@ import (
 )
 
 type ClickReq struct {
-	Pub             string `form:"pub" bson:"pub" json:"pub"`
-	CallBack        string `form:"callback" bson:"callback" json:"callback"`
-	Cid             string `form:"cid" bson:"cid" json:"cid"`
-	Sid             string `form:"sid" bson:"sid,omitempty" json:"sid,omitempty"`
+	Pub             string `form:"pub" bson:"pub" json:"pub"`											// 渠道
+	CallBack        string `form:"callback" bson:"callback" json:"callback"`							// 渠道回调地址
+	Cid             string `form:"cid" bson:"cid" json:"cid"`											// 产品id
 	Ip              string `form:"ip" bson:"ip,omitempty" json:"ip,omitempty"`
 	Os              string `form:"os" bson:"os,omitempty" json:"os,omitempty"`
 	OsVersion       string `form:"osversion" bson:"osversion,omitempty" json:"os_version,omitempty"`
@@ -31,7 +30,7 @@ type ClickReq struct {
 type ClickRes struct {
 	Code    int       `form:"code" json:"code"`
 	Message string    `form:"message" json:"message"`
-	Data    *ClickReq `form:"data" json:"data"`
+	Data    *Record `form:"data" json:"data"`
 }
 
 // 需要确认Click存储时是否嵌套
@@ -46,7 +45,6 @@ type Record struct {
 	Pub             string        `form:"pub" bson:"pub" json:"pub"`
 	CallBack        string        `form:"callback" bson:"callback" json:"callback"`
 	Cid             string        `form:"cid" bson:"cid" json:"cid"`
-	Sid             string        `form:"sid" bson:"sid,omitempty" json:"sid,omitempty"`
 	Ip              string        `form:"ip" bson:"ip,omitempty" json:"ip,omitempty"`
 	Os              string        `form:"os" bson:"os,omitempty" json:"os,omitempty"`
 	OsVersion       string        `form:"osversion" bson:"osversion,omitempty" json:"os_version,omitempty"`
@@ -71,7 +69,6 @@ func (s *Service) Click(rid string, c *gin.Context) (interface{}, interface{}, i
 	res := &ClickRes{
 		Code:    200,
 		Message: "",
-		Data:    req,
 	}
 
 	// 检查设备参数
@@ -102,7 +99,6 @@ func (s *Service) Click(rid string, c *gin.Context) (interface{}, interface{}, i
 		Pub:             req.Pub,
 		CallBack:        req.CallBack,
 		Cid:             req.Cid,
-		Sid:             req.Sid,
 		Ip:              req.Ip,
 		Os:              req.Os,
 		OsVersion:       req.OsVersion,
@@ -133,34 +129,63 @@ func (s *Service) Click(rid string, c *gin.Context) (interface{}, interface{}, i
 		s.warnLog.Errorf("request advertiser failed [%v], err [%s]", *clickInfo, err.Error())
 		return req, res, http.StatusInternalServerError, nil
 	}
-
+	res.Data = clickInfo
 	return req, res, http.StatusOK, nil
 }
 
 func (s *Service) RequestAdvertiser(req *ClickReq, clickId string, cidCfg *CidInfo) error {
-	// 信息替换
 	adReq := make(map[string]interface{})
-	adReq["pub"] = cidCfg.MyName
-	adReq["cid"] = cidCfg.AdvertiserCid
-	adReq["app_id"] = cidCfg.AppId
-	// 潜规则 BillingType要和router一致
-	callBack := fmt.Sprintf("http://%s/%s?click_id=%s", s.domain, cidCfg.BillingType, clickId)
-	escapeUrl := url.QueryEscape(callBack)
-	adReq["callback"] = escapeUrl
+	switch cidCfg.AdvertiserCid {
+		case "weiyi":
+			adReq["channelId"] = cidCfg.MyName
+			adReq["callback"] = clickId
+		default:
+			adReq["pub"] = cidCfg.MyName
+			adReq["cid"] = cidCfg.AdvertiserCid
+			adReq["app_id"] = cidCfg.AppId
+			// 潜规则 BillingType要和router一致
+			callBack := fmt.Sprintf("http://%s/%s?click_id=%s", s.domain, cidCfg.BillingType, clickId)
+			escapeUrl := url.QueryEscape(callBack)
+			adReq["callback"] = escapeUrl
+	}
 
 	// 参数传递
-	adReq["ip"] = req.Ip
-	adReq["os"] = req.Os
-	adReq["osversion"] = req.OsVersion
-	adReq["devicetype"] = req.DeviceType
-	adReq["idfa"] = req.Idfa
-	adReq["idfamd5"] = req.IdfaMd5
-	adReq["imei"] = req.Imei
-	adReq["imeimd5"] = req.ImeiMd5
-	adReq["androidid"] = req.AndroidId
-	adReq["androididmd5"] = req.AndroidIdMd5
-	adReq["advertiserid"] = req.AdvertiserId
-	adReq["advertiseridmd5"] = req.AdvertiserIdMd5
+	if req.Ip != "" {
+		adReq["ip"] = req.Ip
+	}
+	if req.Os != "" {
+		adReq["os"] = req.Os
+	}
+	if req.OsVersion != "" {
+		adReq["osversion"] = req.OsVersion
+	}
+	if req.DeviceType != "" {
+		adReq["devicetype"] = req.DeviceType
+	}
+	if req.Idfa != "" {
+		adReq["idfa"] = req.Idfa
+	}
+	if req.IdfaMd5 != "" {
+		adReq["idfamd5"] = req.IdfaMd5
+	}
+	if req.Imei != "" {
+		adReq["imei"] = req.Imei
+	}
+	if req.ImeiMd5 != "" {
+		adReq["imeimd5"] = req.ImeiMd5
+	}
+	if req.AndroidId != "" {
+		adReq["androidid"] = req.AndroidId
+	}
+	if req.AndroidIdMd5 != "" {
+		adReq["androididmd5"] = req.AndroidIdMd5
+	}
+	if req.AdvertiserId != "" {
+		adReq["advertiserid"] = req.AdvertiserId
+	}
+	if req.AdvertiserIdMd5 != "" {
+		adReq["advertiseridmd5"] = req.AdvertiserIdMd5
+	}
 
 	adUrl := cidCfg.AdvertiserAddr
 	s.infoLog.Info(adUrl)

@@ -95,7 +95,7 @@ func (s *Service) Callback(rid string, c *gin.Context) (interface{}, interface{}
 			s.infoLog.Infof("call back %s reduced", record.CallBack)
 		}
 	} else {
-		// 更新mongo 应该不会走到这一支
+		// 更新mongo
 		if err := s.mgo.Collection.UpdateId(record.ClickId, bson.M{"$set": bson.M{updateTimeField: time.Now().Unix()}}); err != nil{
 			res.Message = err.Error()
 			s.warnLog.Errorf("update req [%v] subPath time failed.err[%s]", *req, res.Message)
