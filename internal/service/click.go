@@ -1,8 +1,10 @@
 package service
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/hpifu/go-kit/hhttp"
 	"gopkg.in/mgo.v2/bson"
 	"net/http"
 	"net/url"
@@ -30,7 +32,7 @@ type ClickReq struct {
 type ClickRes struct {
 	Code    int       `form:"code" json:"code"`
 	Message string    `form:"message" json:"message"`
-	Data    *Record `form:"data" json:"data"`
+	Data    interface{} `form:"data" json:"data"`
 }
 
 // 需要确认Click存储时是否嵌套
@@ -57,6 +59,13 @@ type Record struct {
 	AndroidIdMd5    string        `form:"androidid_md5" bson:"androidid_md5,omitempty" json:"androidid_md5,omitempty"`
 	AdvertiserId    string        `form:"advertiserid" bson:"advertiserid,omitempty" json:"advertiser_id,omitempty"`
 	AdvertiserIdMd5 string        `form:"advertiserid_md5" bson:"advertiserid_md5,omitempty" json:"advertiserid_md5,omitempty"`
+}
+
+type WeiYiRes struct {
+	Code int `json:"code"`
+	Flag int `json:"flag"`
+	Message string `json:"message"`
+	Data string `json:"data"`
 }
 
 func (s *Service) Click(rid string, c *gin.Context) (interface{}, interface{}, int, error) {
@@ -123,17 +132,18 @@ func (s *Service) Click(rid string, c *gin.Context) (interface{}, interface{}, i
 	}
 
 	// 按照甲方请求参数进行封装
-	if err := s.RequestAdvertiser(req, clickId.Hex(), cidInfo); err != nil {
+	httpRes := s.RequestAdvertiser(req, clickId.Hex(), cidInfo)
+	if httpRes.Err != nil {
 		res.Code = http.StatusInternalServerError
-		res.Message = err.Error()
-		s.warnLog.Errorf("request advertiser failed [%v], err [%s]", *clickInfo, err.Error())
+		res.Message = httpRes.Err.Error()
+		s.warnLog.Errorf("request advertiser failed [%v], err [%s]", *clickInfo, httpRes.Err.Error())
 		return req, res, http.StatusInternalServerError, nil
 	}
-	res.Data = clickInfo
+	res = s.DealResponse(httpRes, clickId.Hex(), cidInfo)
 	return req, res, http.StatusOK, nil
 }
 
-func (s *Service) RequestAdvertiser(req *ClickReq, clickId string, cidCfg *CidInfo) error {
+func (s *Service) RequestAdvertiser(req *ClickReq, clickId string, cidCfg *CidInfo) *hhttp.HttpResult {
 	adReq := make(map[string]interface{})
 	switch cidCfg.AdvertiserCid {
 		case "weiyi":
@@ -191,12 +201,27 @@ func (s *Service) RequestAdvertiser(req *ClickReq, clickId string, cidCfg *CidIn
 	s.infoLog.Info(adUrl)
 	s.infoLog.Info(adReq)
 	httpRes := s.httpClient.GET(adUrl, nil, adReq, nil)
-	if httpRes.Err != nil {
-		s.warnLog.Errorf("request %s params %v, response [%d][%s]", adUrl, adReq, httpRes.Status, httpRes.Err.Error())
-		return httpRes.Err
+	return httpRes
+}
+
+func (s *Service) DealResponse(httpRes *hhttp.HttpResult, clickId string, cidCfg *CidInfo) *ClickRes {
+	res := &ClickRes{
+		Code:    200,
+		Message: "",
 	}
-	s.infoLog.Infof("request %s params %v, response [%d]", adUrl, adReq, httpRes.Status)
-	return nil
+	switch cidCfg.AdvertiserCid {
+	case "weiyi":
+		wy := WeiYiRes{}
+		_ = json.Unmarshal(httpRes.Res, &wy)
+		if wy.Code != 0 {
+			res.Code = wy.Code
+			res.Message = wy.Message
+		}
+		res.Data = wy.Data
+	default:
+		res.Data = clickId
+	}
+	return res
 }
 
 func CheckReqDevId(req *ClickReq) string {
