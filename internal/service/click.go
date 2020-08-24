@@ -148,7 +148,7 @@ func (s *Service) RequestAdvertiser(req *ClickReq, clickId string, cidCfg *CidIn
 	switch cidCfg.AdvertiserCid {
 		case "weiyi":
 			adReq["channelId"] = cidCfg.MyName
-			adReq["callbackurl"] = clickId
+			adReq["callBackUrl"] = clickId
 		default:
 			adReq["pub"] = cidCfg.MyName
 			adReq["cid"] = cidCfg.AdvertiserCid
