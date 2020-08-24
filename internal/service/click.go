@@ -62,8 +62,8 @@ type Record struct {
 }
 
 type WeiYiRes struct {
-	Code int `json:"code"`
-	Flag int `json:"flag"`
+	Code string `json:"code"`
+	Flag string `json:"flag"`
 	Message string `json:"message"`
 	Data string `json:"data"`
 }
@@ -213,8 +213,8 @@ func (s *Service) DealResponse(httpRes *hhttp.HttpResult, clickId string, cidCfg
 	case "weiyi":
 		wy := WeiYiRes{}
 		_ = json.Unmarshal(httpRes.Res, &wy)
-		if wy.Code != 0 {
-			res.Code = wy.Code
+		if wy.Code != "0" {
+			res.Code = -1
 			res.Message = wy.Message
 		}
 		res.Data = wy.Data
