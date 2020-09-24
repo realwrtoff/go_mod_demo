@@ -68,7 +68,7 @@ func (m *MgoKv)Load(memKv *MemKv) error {
 			MyName: elem.MyName,
 			BillingType: elem.BillingType,
 		}
-		memKv.Set(key, cidInfo)
+		memKv.Set(*key, cidInfo)
 	}
 	return nil
 }

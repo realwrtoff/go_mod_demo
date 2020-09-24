@@ -67,10 +67,8 @@ func (s *Service) Channel(rid string, c *gin.Context) (interface{}, interface{},
 			cidInfo.Status = req.Status
 			res.Message += fmt.Sprintf(" status=[%d]", req.Status)
 		}
-		if req.Step != 0 {
-			cidInfo.Step = req.Step
-			res.Message += fmt.Sprintf(" step=[%d]", req.Step)
-		}
+		cidInfo.Step = req.Step
+		res.Message += fmt.Sprintf(" step=[%d]", req.Step)
 		if len(req.AdvertiserAddr) != 0 {
 			unescapeUrl, err := url.QueryUnescape(req.AdvertiserAddr)
 			if err != nil {
