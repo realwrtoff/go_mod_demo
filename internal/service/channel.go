@@ -3,25 +3,14 @@ package service
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/realwrtoff/go_mod_demo/internal/cache"
 	"net/http"
 	"net/url"
 )
 
-type CidInfo struct {
-	Status         int    `form:"status" json:"status,omitempty"`                   // 单子状态
-	Counter        int    `form:"counter" json:"counter,omitempty"`                 // 单子计数器
-	Step           int    `form:"step" json:"step,omitempty"`                       // 单子步长
-	AdvertiserAddr string `form:"advertiser_addr" json:"advertiser_addr,omitempty"` // 单子广告主的请求地址
-	AdvertiserCid  string `form:"advertiser_cid" json:"advertiser_cid,omitempty"`   // 请求广告主的身份
-	AppId          string `form:"app_id" json:"app_id,omitempty"`                   // 广告ID
-	MyName         string `form:"my_name" json:"my_name,omitempty"`                 // 请求广告主的身份
-	BillingType    string `form:"billing_type" json:"billing_type,omitempty"`       // 计费类型 install, active ?
-}
-
 type ChannelReq struct {
-	Pub     string `form:"pub"  json:"pub,omitempty"` // 渠道
-	Cid     string `form:"cid" json:"cid,omitempty"`  // 单子id
-	CidInfo        // 渠道单子信息
+	cache.PubChannelKey
+	cache.CidInfo
 }
 
 type ChannelRes struct {
@@ -40,8 +29,11 @@ func (s *Service) Channel(rid string, c *gin.Context) (interface{}, interface{},
 		Message: "",
 	}
 
-	key := fmt.Sprintf("%s_%s", req.Pub, req.Cid)
-	value, ok := s.pubCidCfg.Get(key)
+	key := &cache.PubChannelKey {
+		Pub: req.Pub,
+		Cid: req.Cid,
+	}
+	value, ok := s.pubCidCfg.Get(*key)
 	if !ok {
 		// urldecode 广告主url
 		unescapeUrl, err := url.QueryUnescape(req.AdvertiserAddr)
@@ -50,7 +42,7 @@ func (s *Service) Channel(rid string, c *gin.Context) (interface{}, interface{},
 			return req, res, http.StatusInternalServerError, nil
 		}
 		// 初始化
-		cfg := &CidInfo{
+		cfg := &cache.CidInfo{
 			Status:         req.Status,
 			Counter:        req.Counter,
 			Step:           req.Step,
@@ -60,10 +52,15 @@ func (s *Service) Channel(rid string, c *gin.Context) (interface{}, interface{},
 			MyName:         req.MyName,
 			BillingType:    req.BillingType,
 		}
-		s.pubCidCfg.Set(key, cfg)
-		res.Message = fmt.Sprintf("add pub %s cid %s advertiser addr %s ok", req.Pub, req.Cid, req.AdvertiserAddr)
+		s.pubCidCfg.Set(*key, cfg)
+		err = s.pubCidMgoKv.Set(key, cfg)
+		if err != nil {
+			res.Message = fmt.Sprintf("insert failed err[%s]", err.Error())
+		} else {
+			res.Message = fmt.Sprintf("insert pub %s cid %s advertiser addr %s, step %d ok", req.Pub, req.Cid, cfg.AdvertiserAddr, cfg.Step)
+		}
 	} else {
-		cidInfo := value.(*CidInfo)
+		cidInfo := value.(*cache.CidInfo)
 		// 更新
 		res.Message = fmt.Sprintf("update pub %s cid %s set", req.Pub, req.Cid)
 		if req.Status != 0 {
@@ -99,8 +96,12 @@ func (s *Service) Channel(rid string, c *gin.Context) (interface{}, interface{},
 			cidInfo.BillingType = req.BillingType
 			res.Message += fmt.Sprintf(" billing_type=[%s]", req.BillingType)
 		}
-		// 无需写回，已经更新
-		// s.pubCidCfg.Set(key, cidInfo)
+		err := s.pubCidMgoKv.Set(key, cidInfo)
+		if err != nil {
+			res.Message = fmt.Sprintf("update failed err[%s]", err.Error())
+		} else {
+			res.Message = fmt.Sprintf("update pub %s cid %s advertiser addr %s, step %d ok", req.Pub, req.Cid, cidInfo.AdvertiserAddr, cidInfo.Step)
+		}
 	}
 	return req, res, http.StatusOK, nil
 }
@@ -117,13 +118,16 @@ func (s *Service) GetChannel(rid string, c *gin.Context) (interface{}, interface
 		Message: "",
 	}
 
-	key := fmt.Sprintf("%s_%s", req.Pub, req.Cid)
-	value, ok := s.pubCidCfg.Get(key)
+	key := &cache.PubChannelKey {
+		Pub: req.Pub,
+		Cid: req.Cid,
+	}
+	value, ok := s.pubCidCfg.Get(*key)
 	if ok {
-		cidInfo := value.(*CidInfo)
+		cidInfo := value.(*cache.CidInfo)
 		res.Message = fmt.Sprintf("%v", cidInfo)
 	} else {
-		res.Message = key + " not found"
+		res.Message = fmt.Sprintf("%v not found", key)
 	}
 	return req, res, http.StatusOK, nil
 }

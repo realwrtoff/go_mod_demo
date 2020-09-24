@@ -12,6 +12,7 @@ import (
 	"github.com/hpifu/go-kit/hhttp"
 	"github.com/hpifu/go-kit/hrule"
 	"github.com/hpifu/go-kit/logger"
+	_ "github.com/jinzhu/gorm/dialects/mysql"
 	rotatelogs "github.com/lestrrat-go/file-rotatelogs"
 	"github.com/olivere/elastic/v7"
 	"github.com/realwrtoff/go_mod_demo/internal/cache"
@@ -36,6 +37,14 @@ type Options struct {
 		CookieDomain string   `hflag:"usage: cookie domain"`
 	}
 	Mongo struct {
+		Addrs []string `hflag:"usage: cache address" hdef:"127.0.0.1:27017"`
+		Username       string `hflag:"usage: cache username"`
+		Password       string `hflag:"usage: cache password"`
+		DbName         string `hflag:"usage: cache db name"`
+		CollectionName string `hflag:"usage: cache collection name"`
+		Timeout        int `hflag:"usage: cache timeout"`
+	}
+	PubCidMongo struct {
 		Addrs []string `hflag:"usage: cache address" hdef:"127.0.0.1:27017"`
 		Username       string `hflag:"usage: cache username"`
 		Password       string `hflag:"usage: cache password"`
@@ -103,6 +112,7 @@ func main() {
 	infoLog := logs[0]
 	warnLog := logs[1]
 	accessLog := logs[2]
+
 	client, err := elastic.NewClient(
 		elastic.SetURL(options.Es.Uri),
 		elastic.SetSniff(false),
@@ -125,13 +135,25 @@ func main() {
 		panic(err)
 	}
 	fmt.Println("connect mogo ok")
+	pubCidMgo := cache.NewMongo(options.PubCidMongo.Username, options.PubCidMongo.Password,
+		options.PubCidMongo.DbName, options.PubCidMongo.CollectionName,
+		options.PubCidMongo.Timeout, options.PubCidMongo.Addrs)
+	_ = pubCidMgo.Connect()
+	if err := pubCidMgo.Ping(); err != nil {
+		panic(err)
+	}
+	fmt.Println("connect pub cid mogo ok")
+
+	pubCidMgoKv := cache.NewMgoKv(pubCidMgo)
 	pubCidCfg := cache.NewMemKv()
 	httpClient := hhttp.NewHttpClient(20, time.Second, time.Second)
 
 	// init services
-	svc := service.NewService(options.Service.CookieSecure, options.Service.CookieDomain, mgo, pubCidCfg, httpClient)
+	svc := service.NewService(options.Service.CookieSecure, options.Service.CookieDomain, mgo, pubCidMgoKv, pubCidCfg, httpClient)
 	svc.SetLogger(infoLog, warnLog, accessLog)
-
+	if err := svc.Init(); err != nil {
+		panic(err)
+	}
 	// init gin
 	gin.SetMode(gin.ReleaseMode)
 	r := gin.New()
@@ -164,6 +186,11 @@ func main() {
 		Handler: r,
 	}
 	go func() {
+		//defer func() {
+		//	if err := recover(); err != nil{
+		//		warnLog.Error(err)
+		//	}
+		//}()
 		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			panic(err)
 		}

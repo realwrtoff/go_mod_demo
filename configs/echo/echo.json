@@ -17,6 +17,16 @@
         "collectionName": "guahao",
         "timeout": 30
     },
+    "pubCidMongo": {
+        "addrs": [
+            "10.0.1.31:21617"
+        ],
+        "username": "",
+        "password": "",
+        "dbName": "haina",
+        "collectionName": "pub_cid_info",
+        "timeout": 30
+    },
     "es": {
         "uri": "http://10.0.1.30:21692"
     },

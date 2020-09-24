@@ -3,6 +3,7 @@ package service
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/realwrtoff/go_mod_demo/internal/cache"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 	"net/http"
@@ -51,7 +52,7 @@ func (s *Service) Install(rid string, c *gin.Context) (interface{}, interface{},
 		s.warnLog.Warn(res.Message)
 		return nil, res, http.StatusNotFound, fmt.Errorf("req [%v] key[%s] cid info not found", req, key)
 	}
-	cidInfo := value.(*CidInfo)
+	cidInfo := value.(*cache.CidInfo)
 
 	if cidInfo.BillingType == "install" {
 		cidInfo.Counter += 1

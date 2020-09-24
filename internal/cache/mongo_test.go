@@ -77,3 +77,4 @@ func TestMongo_Insert(t *testing.T)  {
 		t.Errorf("connect cache %s failed[%s]", addrs, err.Error())
 	}
 }
+

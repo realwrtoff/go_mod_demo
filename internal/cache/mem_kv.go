@@ -1,12 +1,5 @@
 package cache
 
-import "sync"
-
-type MemKv struct {
-	kvs   map[interface{}]interface{}
-	mutex sync.RWMutex
-}
-
 func NewMemKv() *MemKv {
 	return &MemKv{
 		kvs: make(map[interface{}]interface{}),
@@ -20,8 +13,9 @@ func (m *MemKv) Get(key interface{}) (interface{}, bool) {
 	return val, ok
 }
 
-func (m *MemKv) Set(key interface{}, value interface{}) {
+func (m *MemKv) Set(key interface{}, value interface{}) bool {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 	m.kvs[key] = value
+	return true
 }

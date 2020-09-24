@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/hpifu/go-kit/hhttp"
+	"github.com/realwrtoff/go_mod_demo/internal/cache"
 	"gopkg.in/mgo.v2/bson"
 	"net/http"
 	"net/url"
@@ -97,7 +98,7 @@ func (s *Service) Click(rid string, c *gin.Context) (interface{}, interface{}, i
 		s.warnLog.Warn(res.Message)
 		return req, res, http.StatusNotFound, nil
 	}
-	cidInfo := value.(*CidInfo)
+	cidInfo := value.(*cache.CidInfo)
 
 	// 写入mongo
 	clickId := bson.NewObjectId()
@@ -143,7 +144,7 @@ func (s *Service) Click(rid string, c *gin.Context) (interface{}, interface{}, i
 	return req, res, http.StatusOK, nil
 }
 
-func (s *Service) RequestAdvertiser(req *ClickReq, clickId string, cidCfg *CidInfo) *hhttp.HttpResult {
+func (s *Service) RequestAdvertiser(req *ClickReq, clickId string, cidCfg *cache.CidInfo) *hhttp.HttpResult {
 	adReq := make(map[string]interface{})
 	switch cidCfg.AdvertiserCid {
 		case "weiyi":
@@ -204,7 +205,7 @@ func (s *Service) RequestAdvertiser(req *ClickReq, clickId string, cidCfg *CidIn
 	return httpRes
 }
 
-func (s *Service) DealResponse(httpRes *hhttp.HttpResult, clickId string, cidCfg *CidInfo) *ClickRes {
+func (s *Service) DealResponse(httpRes *hhttp.HttpResult, clickId string, cidCfg *cache.CidInfo) *ClickRes {
 	res := &ClickRes{
 		Code:    200,
 		Message: "",

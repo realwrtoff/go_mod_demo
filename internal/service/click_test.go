@@ -32,7 +32,7 @@ func TestHttpGet(t *testing.T)  {
 	params := make(map[string]interface {})
 	params["pub"] = "jim"
 	params["cid"] = "cid"
-	params["idfa"] = "fengming-phone"
+	params["idfa"] = "jim-phone"
 
 	res := client.Do("GET", url, nil, params, nil)
 	if res.Err != nil {

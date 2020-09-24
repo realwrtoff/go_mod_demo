@@ -1,4 +1,4 @@
-FROM centos:centos7
+FROM centos:centos7 as builder
 
 RUN yum install -y make \
     && yum install -y git gcc \
@@ -23,7 +23,9 @@ ADD go.sum /go_mod_demo/
 ADD Makefile /go_mod_demo/
 RUN cd go_mod_demo && make output
 
+FROM centos:centos7
+COPY --from=builder /go_mod_demo/output/ /
 EXPOSE 7060
 
-WORKDIR /go_mod_demo/output/tpl-go-http
+WORKDIR /go_mod_demo
 CMD [ "bin/echo", "-c", "configs/echo.json" ]

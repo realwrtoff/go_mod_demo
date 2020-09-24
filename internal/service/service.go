@@ -11,6 +11,7 @@ type Service struct {
 	secure    bool
 	domain    string
 	mgo     *cache.Mongo
+	pubCidMgoKv *cache.MgoKv
 	pubCidCfg   *cache.MemKv
 	httpClient  *hhttp.HttpClient
 	infoLog   *logrus.Logger
@@ -28,6 +29,7 @@ func NewService(
 	secure bool,
 	domain string,
 	mgo *cache.Mongo,
+	pubCidMgoKv *cache.MgoKv,
 	pubCidCfg *cache.MemKv,
 	httpClient *hhttp.HttpClient,
 ) *Service {
@@ -35,10 +37,15 @@ func NewService(
 		secure:    secure,
 		domain:    domain,
 		mgo: mgo,
+		pubCidMgoKv: pubCidMgoKv,
 		pubCidCfg: pubCidCfg,
 		httpClient: httpClient,
 		infoLog:   logrus.New(),
 		warnLog:   logrus.New(),
 		accessLog: logrus.New(),
 	}
+}
+
+func (s *Service) Init() error {
+	return s.pubCidMgoKv.Load(s.pubCidCfg)
 }

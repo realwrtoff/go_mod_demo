@@ -8,6 +8,7 @@ require (
 	github.com/golang/mock v1.2.0 // indirect
 	github.com/hpifu/go-kit v1.8.7
 	github.com/hpifu/tpl-go-http v0.0.0-20200403161136-f3d63a0efa40 // indirect
+	github.com/jinzhu/gorm v1.9.16
 	github.com/lestrrat-go/file-rotatelogs v2.3.0+incompatible
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.1 // indirect
