@@ -1,7 +1,7 @@
 binary=echo
 dockeruser=realwrtoff
 gituser=hpifu
-repository=tpl-go-http
+repository=go_mod_demo
 version=$(shell git describe --tags)
 
 export PATH:=${PATH}:${GOPATH}/bin
